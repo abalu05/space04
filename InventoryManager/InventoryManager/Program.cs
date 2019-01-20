@@ -61,18 +61,19 @@ namespace SpaceEngeneers04
             }
             if (Runtime.UpdateFrequency != UpdateFrequency.None)
             {
-                findAllBlocks(); findAllParm(); findAllItem(ItemsConf);
+                findAllBlocks();
                 foreach (clsBlock e1 in allBlocks)
                 {
                     Echo("--" + e1.thisBlock.CustomName);
                     if (e1.Contains("scan1")) e1.Scan1(ItemsConf, this);
                     if (e1.Contains("scan2")) e1.Scan2(ItemsConf, this);
                     if (e1.Contains("scan3")) e1.Scan3(ItemsConf, this);
+                }
+                findAllParm(); findAllItem(ItemsConf);
+                List<clsParam> actP = netxParm(); List<clsItem> actI = findItem(actP.First().name);
+                foreach (clsParam e2 in actP)
+                {
 
-                    foreach (clsParam e2 in e1.Param)
-                    {
-                        
-                    }
                 }
             }
             Echo(Runtime.UpdateFrequency.ToString());
@@ -91,18 +92,6 @@ namespace SpaceEngeneers04
             foreach (IMyTerminalBlock e1 in Blocks)
             {
                 if (e1.CustomData.Contains(STORAGETAG) && e1.HasInventory) { allBlocks.Add(new clsBlock(e1)); }
-            }
-        }
-
-        /// <summary>
-        /// findet alle Parameter von allen Blocks
-        /// </summary>
-        public void findAllParm()
-        {
-            allParam.Clear();
-            foreach (clsBlock e1 in allBlocks)
-            {
-                allParam.AddList(clsParam.parseParams(e1.thisBlock));
             }
         }
 
@@ -128,6 +117,35 @@ namespace SpaceEngeneers04
             }
         }
 
+        public List<clsItem> findItem(string name)
+        {   
+            return allItems.Where(i => i.rd == name).ToList();
+        }
+
+        /// <summary>
+        /// findet alle Parameter von allen Blocks
+        /// </summary>
+        public void findAllParm()
+        {
+            allParam.Clear();
+            foreach (clsBlock e1 in allBlocks)
+            {
+                allParam.AddList(clsParam.parseParams(e1.thisBlock));
+            }
+        }
+
+        /// <summary>
+        /// holt das erste Item, und alle mit dem gleichen Namen, aus der Liste
+        /// </summary>
+        public List<clsParam> netxParm()
+        {
+            int len = allParam.Count;
+            if (len < 1) return null;
+            List<clsParam> a1 = new List<clsParam>();
+            a1.Add(allParam[0]); allParam.RemoveAt(0);
+            for (; len >= 0; len--) if (a1[0].name == allParam[len].name) { a1.Add(allParam[len]); allParam.RemoveAt(len); }
+            return a1;
+        }
 
         #region class
         public class clsBlock
