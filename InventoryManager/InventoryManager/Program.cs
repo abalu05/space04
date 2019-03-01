@@ -69,17 +69,48 @@ namespace SpaceEngeneers04
                     if (e1.Contains("scan2")) e1.Scan2(ItemsConf, this);
                     if (e1.Contains("scan3")) e1.Scan3(ItemsConf, this);
                 }
-                findAllParm(); findAllItem(ItemsConf);
-                List<clsParam> actP = netxParm(); List<clsItem> actI = findItem(actP.First().name);
-                foreach (clsParam e2 in actP)
+                findAllParm();
+                findAllItem(ItemsConf);
+                List<clsParam> target = netxParm();
+                List<clsItem> source = findItem(target.First().name);
+                int amount = getAnzahl(target.First().name) / target.Count;
+                foreach (clsParam e2 in target)
                 {
-                
+                    
                 }
             }
             Echo(Runtime.UpdateFrequency.ToString());
         }
 
-
+        /// <summary>
+        /// Gibt die Anzal des Items vom gesammten System
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public int getAnzahl(List<clsItem> item, string name)
+        {
+            int amount = 0;
+            foreach (clsItem i1 in item)
+            {
+                List<IMyInventoryItem> i2 = i1.myInventory.GetItems();
+                foreach (IMyInventoryItem i3 in i2)
+                {
+                    clsItem i4 = new clsItem(i3);
+                    if (i4.rd == name) amount += (int)i3.Amount;
+                }
+            }
+            return amount;
+        }
+        /// <summary>
+        /// Gibt die Anzahl des Items aus der globalen Liste
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public int getAnzahl(string name)
+        {
+            return allItems.Where(y => y.rd == name).Select(x => x.amount).Sum();
+        }
 
         /// <summary>
         /// findet alle Blöcke die das STORAGETAG in den CustomData enthalten und ein Invntory haben
@@ -104,6 +135,7 @@ namespace SpaceEngeneers04
             {
                 for (int i1 = 0; i1 < b1.thisBlock.InventoryCount; i1++)
                 {
+                    int pos = 0;
                     IMyInventory i2 = b1.thisBlock.GetInventory(i1);
                     List<IMyInventoryItem> i3 = i2.GetItems();
                     foreach (IMyInventoryItem i4 in i3)
@@ -111,14 +143,20 @@ namespace SpaceEngeneers04
                         clsItem i5 = new clsItem(i4, i2);
                         clsItem name = ItemsConf.ContainsKey(i5.id);
                         i5.rd = name.rd;
+                        i5.pos1 = pos++;
                         allItems.Add(i5);
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Findet alle Items aus der globalen Liste.
+        /// </summary>
+        /// <param name="name">string: Name des Items</param>
+        /// <returns></returns>
         public List<clsItem> findItem(string name)
-        {   
+        {
             return allItems.Where(i => i.rd == name).ToList();
         }
 
@@ -139,11 +177,11 @@ namespace SpaceEngeneers04
         /// </summary>
         public List<clsParam> netxParm()
         {
-            int len = allParam.Count;
+            int len = allParam.Count-1;
             if (len < 1) return null;
             List<clsParam> a1 = new List<clsParam>();
             a1.Add(allParam[0]); allParam.RemoveAt(0);
-            for (; len >= 0; len--) if (a1[0].name == allParam[len].name) { a1.Add(allParam[len]); allParam.RemoveAt(len); }
+            for (--len; len >= 0; len--) if (a1[0].name == allParam[len].name) { a1.Add(allParam[len]); allParam.RemoveAt(len); }
             return a1;
         }
 
@@ -251,6 +289,8 @@ namespace SpaceEngeneers04
             public IMyTerminalBlock myTerminalBlock;
             /// <summary>Inventory vom Block</summary>
             public IMyInventory myInventory;
+            /// <summary>Anzahl der Item</summary>
+            public int amount = 0;
             /// <summary>Position im inventory</summary>
             public int pos1 = 0;
             /// <summary>subType</summary>
@@ -269,7 +309,7 @@ namespace SpaceEngeneers04
 
             public clsItem(string rS, string rT, string rD = null) { rs = rS; rt = rT; rd = rD; }
             public clsItem(IMyInventoryItem v) : this(v.Content.SubtypeId.ToString(), v.Content.TypeId.ToString()) { }
-            public clsItem(IMyInventoryItem v, IMyInventory i) : this(v) { myInventory = i; }
+            public clsItem(IMyInventoryItem v, IMyInventory i) : this(v) { myInventory = i; amount = (int)v.Amount; }
 
             public override string ToString() { return $"rs={rs},rt={rt},rd={rd}"; }
         }
