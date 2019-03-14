@@ -76,6 +76,7 @@ namespace SpaceEngeneers04
                 int amount = getAnzahl(target.First().name) / target.Count;
                 foreach (clsParam e2 in target)
                 {
+
                     
                 }
             }
@@ -173,7 +174,7 @@ namespace SpaceEngeneers04
         }
 
         /// <summary>
-        /// holt das erste Item, und alle mit dem gleichen Namen, aus der Liste
+        /// holt das erste Param, und alle mit dem gleichen Namen, aus der Liste
         /// </summary>
         public List<clsParam> netxParm()
         {
@@ -186,6 +187,9 @@ namespace SpaceEngeneers04
         }
 
         #region class
+        /// <summary>
+        /// Block mit zusatzfuktionen
+        /// </summary>
         public class clsBlock
         {
             public IMyTerminalBlock thisBlock;
@@ -259,6 +263,9 @@ namespace SpaceEngeneers04
             public override string ToString() { return thisBlock.CustomName + "\n" + string.Join("\n", Param); }
         }
 
+        /// <summary>
+        /// Parameter im Custom Data
+        /// </summary>
         public class clsParam
         {
             public IMyTerminalBlock thisBlock;
@@ -284,6 +291,9 @@ namespace SpaceEngeneers04
             public override string ToString() { return (num >= 0 ? "+" : "") + num.ToString() + " " + name; }
         }
 
+        /// <summary>
+        /// Item mit Name und Position
+        /// </summary>
         public class clsItem
         {
             public IMyTerminalBlock myTerminalBlock;
@@ -314,9 +324,14 @@ namespace SpaceEngeneers04
             public override string ToString() { return $"rs={rs},rt={rt},rd={rd}"; }
         }
 
+        /// <summary>
+        /// Name des Items mit den Anzeige-Name
+        /// rs=subType, rt=mainType, rd=Display Name
+        /// ea=Liste aller Items
+        /// </summary>
         public class clsItemName
         {
-            public Dictionary<string, clsItem> ea = new Dictionary<string, clsItem>();
+            private Dictionary<string, clsItem> ea = new Dictionary<string, clsItem>();
             public void ADD(string rs, string rt, string rd = "") { ea.Add(rs + rt, new clsItem(rs, rt, rd)); }
 
             private clsItem this[string v] { get { return ea[v]; } }
