@@ -51,7 +51,7 @@ namespace SpaceEngeneers04
         public void Save() { }
         public void Main(string argument, UpdateType updateSource)
         {
-            Echo(DateTime.Now.ToString());
+            Echo(DateTime.Now.ToString("s"));
 
             switch (argument.ToLower())
             {
@@ -76,8 +76,11 @@ namespace SpaceEngeneers04
                 int amount = getAnzahl(target.First().name) / target.Count;
                 foreach (clsParam e2 in target)
                 {
-
-                    
+                    foreach (clsItem e3 in source)
+                    {
+                        // quelle und ziel, wenn gleich nur menge kontrolieren
+                        e3.myInventory.TransferItemTo(e2.thisBlock.GetInventory(0), 0);
+                    }
                 }
             }
             Echo(Runtime.UpdateFrequency.ToString());
@@ -94,8 +97,9 @@ namespace SpaceEngeneers04
             int amount = 0;
             foreach (clsItem i1 in item)
             {
-                List<IMyInventoryItem> i2 = i1.myInventory.GetItems();
-                foreach (IMyInventoryItem i3 in i2)
+                List<MyInventoryItem> i2 = new List<MyInventoryItem>();
+                i1.myInventory.GetItems(i2);
+                foreach (MyInventoryItem i3 in i2)
                 {
                     clsItem i4 = new clsItem(i3);
                     if (i4.rd == name) amount += (int)i3.Amount;
@@ -104,7 +108,7 @@ namespace SpaceEngeneers04
             return amount;
         }
         /// <summary>
-        /// Gibt die Anzahl des Items aus der globalen Liste
+        /// Gibt die gesamt Anzahl des Items aus der globalen Liste
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
@@ -138,8 +142,9 @@ namespace SpaceEngeneers04
                 {
                     int pos = 0;
                     IMyInventory i2 = b1.thisBlock.GetInventory(i1);
-                    List<IMyInventoryItem> i3 = i2.GetItems();
-                    foreach (IMyInventoryItem i4 in i3)
+                    List<MyInventoryItem> i3 = new List<MyInventoryItem>();
+                    i2.GetItems(i3);
+                    foreach (MyInventoryItem i4 in i3)
                     {
                         clsItem i5 = new clsItem(i4, i2);
                         clsItem name = ItemsConf.ContainsKey(i5.id);
@@ -178,7 +183,7 @@ namespace SpaceEngeneers04
         /// </summary>
         public List<clsParam> netxParm()
         {
-            int len = allParam.Count-1;
+            int len = allParam.Count - 1;
             if (len < 1) return null;
             List<clsParam> a1 = new List<clsParam>();
             a1.Add(allParam[0]); allParam.RemoveAt(0);
@@ -223,9 +228,10 @@ namespace SpaceEngeneers04
 
             public void Scan1(clsItemName liste, Program pp)
             {
-                List<IMyInventoryItem> c3 = thisBlock.GetInventory().GetItems();
+                List<MyInventoryItem> c3 = new List<MyInventoryItem>();
+                thisBlock.GetInventory().GetItems(c3);
                 thisBlock.CustomData = STORAGETAG + "\n";
-                foreach (IMyInventoryItem e1 in c3)
+                foreach (MyInventoryItem e1 in c3)
                 {
                     thisBlock.CustomData += "+ " + liste.ContainsKey(e1, pp).rd + "\n";
                 }
@@ -236,9 +242,10 @@ namespace SpaceEngeneers04
             /// </summary>
             public void Scan2(clsItemName liste, Program p1)
             {
-                List<IMyInventoryItem> c3 = thisBlock.GetInventory(0).GetItems();
+                List<MyInventoryItem> c3 = new List<MyInventoryItem>();
+                thisBlock.GetInventory(0).GetItems(c3);
                 thisBlock.CustomData = STORAGETAG + "\n";
-                foreach (IMyInventoryItem e1 in c3)
+                foreach (MyInventoryItem e1 in c3)
                 {
                     p1.Echo(new clsItem(e1).ToString());
                     clsItem b1 = liste.ContainsKey(e1, p1);
@@ -250,9 +257,10 @@ namespace SpaceEngeneers04
             {
                 for (int k1 = 0; k1 < thisBlock.InventoryCount; k1++)
                 {
-                    List<IMyInventoryItem> c3 = thisBlock.GetInventory(k1).GetItems();
+                    List<MyInventoryItem> c3 = new List<MyInventoryItem>();
+                    thisBlock.GetInventory(k1).GetItems(c3);
                     thisBlock.CustomData = STORAGETAG + "\n";
-                    foreach (IMyInventoryItem e1 in c3)
+                    foreach (MyInventoryItem e1 in c3)
                     {
                         clsItem itm = new clsItem(e1);
                         thisBlock.CustomData += $"Add(\"{itm.rs}\",\"{itm.rt}\");\n";
@@ -318,8 +326,8 @@ namespace SpaceEngeneers04
             public string id { get { return rs + rt; } }
 
             public clsItem(string rS, string rT, string rD = null) { rs = rS; rt = rT; rd = rD; }
-            public clsItem(IMyInventoryItem v) : this(v.Content.SubtypeId.ToString(), v.Content.TypeId.ToString()) { }
-            public clsItem(IMyInventoryItem v, IMyInventory i) : this(v) { myInventory = i; amount = (int)v.Amount; }
+            public clsItem(MyInventoryItem v) : this(v.Type.SubtypeId.ToString(), v.Type.TypeId.ToString()) { }
+            public clsItem(MyInventoryItem v, IMyInventory i) : this(v) { myInventory = i; amount = (int)v.Amount; }
 
             public override string ToString() { return $"rs={rs},rt={rt},rd={rd}"; }
         }
@@ -336,7 +344,7 @@ namespace SpaceEngeneers04
 
             private clsItem this[string v] { get { return ea[v]; } }
             public clsItem ContainsKey(string v) { return this[v]; }
-            public clsItem ContainsKey(IMyInventoryItem v, Program p1)
+            public clsItem ContainsKey(MyInventoryItem v, Program p1)
             {
                 clsItem v1 = new clsItem(v);
                 return ea.ContainsKey(v1.id) ? ea[v1.id] : v1;
@@ -473,8 +481,9 @@ namespace SpaceEngeneers04
             foreach (IMyRefinery cargo in refinery)
             {
                 if (cargo.CustomName.Contains("Deuterium")) continue;
-                List<IMyInventoryItem> c3 = cargo.GetInventory(0).GetItems();
-                foreach (IMyInventoryItem e2 in c3)
+                List<MyInventoryItem> c3 = new List<MyInventoryItem>();
+                cargo.GetInventory(0).GetItems(c3);
+                foreach (MyInventoryItem e2 in c3)
                 {
                     // Echo(getName(e2));
                     if (getName(e2) == item) return cargo;
@@ -493,8 +502,9 @@ namespace SpaceEngeneers04
             GridTerminalSystem.GetBlocksOfType<IMyCargoContainer>(cargos);
             foreach (IMyCargoContainer cargo in cargos)
             {
-                List<IMyInventoryItem> c3 = cargo.GetInventory().GetItems();
-                foreach (IMyInventoryItem e2 in c3)
+                List<MyInventoryItem> c3 = new List<MyInventoryItem>();
+                cargo.GetInventory().GetItems(c3);
+                foreach (MyInventoryItem e2 in c3)
                 {
                     // Echo(getName(e2));
                     if (getName(e2) == item) return cargo;
@@ -530,7 +540,7 @@ namespace SpaceEngeneers04
             GridTerminalSystem.GetBlocksOfType<IMyCargoContainer>(cargos);
             for (int i1 = 0; i1 < cargos.Count; i1++)
             {
-                int anz2 = cargos[i1].GetInventory().GetItems().Count;
+                int anz2 = cargos[i1].GetInventory().ItemCount;
                 if (anz1 < anz2)
                 {
                     nr = i1;
@@ -545,13 +555,13 @@ namespace SpaceEngeneers04
         /// </summary>
         /// <param name="value">Item aus dem Cargo</param>
         /// <returns></returns>
-        public string getName(IMyInventoryItem value)
+        public string getName(MyInventoryItem value)
         {
-            string nn = value.Content.SubtypeId.ToString();
+            string nn = value.Type.SubtypeId.ToString();
             if (nn == "Ice") return nn;
-            if (value.Content.TypeId.ToString().EndsWith("_Ore")) nn += " Ore";
-            else if (value.Content.TypeId.ToString().EndsWith("_Ingot")) nn += " Ingot";
-            else if (value.Content.TypeId.ToString().EndsWith("_Component")) nn += " Component";
+            if (value.Type.TypeId.ToString().EndsWith("_Ore")) nn += " Ore";
+            else if (value.Type.TypeId.ToString().EndsWith("_Ingot")) nn += " Ingot";
+            else if (value.Type.TypeId.ToString().EndsWith("_Component")) nn += " Component";
             return nn;
         }
 
@@ -562,7 +572,8 @@ namespace SpaceEngeneers04
         public void ConcentrateCargo(IMyCargoContainer cargo)
         {
             IMyInventory c2 = cargo.GetInventory();
-            List<IMyInventoryItem> cc = c2.GetItems();
+            List<MyInventoryItem> cc = new List<MyInventoryItem>();
+            c2.GetItems(cc);
             for (int x = 0; x < cc.Count; x++)
             {
                 for (int y = 0; y < cc.Count; y++)
@@ -576,11 +587,13 @@ namespace SpaceEngeneers04
         {
             if (from == null || to == null) return;
             IMyInventory a1 = from.GetInventory(0);
-            List<IMyInventoryItem> a2 = a1.GetItems();
+            List<MyInventoryItem> a2 = new List<MyInventoryItem>();
+            a1.GetItems(a2);
 
             Echo("a2=" + a2.Count.ToString());
             IMyInventory b1 = to.GetInventory();
-            List<IMyInventoryItem> b2 = b1.GetItems();
+            List<MyInventoryItem> b2 = new List<MyInventoryItem>();
+            b1.GetItems(b2);
 
             Echo("b2=" + b2.Count.ToString());
 
@@ -665,6 +678,7 @@ namespace SpaceEngeneers04
             set { Me.CustomData = value.ToString(); }
         }
         */
+
 
 
     }

@@ -34,13 +34,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Sandbox.Common">
-      <HintPath>..\..\..\..\..\Documents\Visual Studio 2013\Projects\SpaceEngeneers01\assembly\Sandbox.Common.dll</HintPath>
+      <HintPath>assembly\Sandbox.Common.dll</HintPath>
     </Reference>
     <Reference Include="Sandbox.Game">
-      <HintPath>..\..\..\..\..\Documents\Visual Studio 2013\Projects\SpaceEngeneers01\assembly\Sandbox.Game.dll</HintPath>
+      <HintPath>assembly\Sandbox.Game.dll</HintPath>
     </Reference>
     <Reference Include="SpaceEngineers.Game">
-      <HintPath>..\..\..\..\..\Documents\Visual Studio 2013\Projects\SpaceEngeneers01\assembly\SpaceEngineers.Game.dll</HintPath>
+      <HintPath>assembly\SpaceEngineers.Game.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -51,19 +51,19 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="VRage">
-      <HintPath>..\..\..\..\..\Documents\Visual Studio 2013\Projects\SpaceEngeneers01\assembly\VRage.dll</HintPath>
+      <HintPath>assembly\VRage.dll</HintPath>
     </Reference>
     <Reference Include="VRage.Game">
-      <HintPath>..\..\..\..\..\Documents\Visual Studio 2013\Projects\SpaceEngeneers01\assembly\VRage.Game.dll</HintPath>
+      <HintPath>assembly\VRage.Game.dll</HintPath>
     </Reference>
     <Reference Include="VRage.Library">
-      <HintPath>..\..\..\..\..\Documents\Visual Studio 2013\Projects\SpaceEngeneers01\assembly\VRage.Library.dll</HintPath>
+      <HintPath>assembly\VRage.Library.dll</HintPath>
     </Reference>
     <Reference Include="VRage.Math">
-      <HintPath>..\..\..\..\..\Documents\Visual Studio 2013\Projects\SpaceEngeneers01\assembly\VRage.Math.dll</HintPath>
+      <HintPath>assembly\VRage.Math.dll</HintPath>
     </Reference>
     <Reference Include="VRage.Native">
-      <HintPath>..\..\..\..\..\Documents\Visual Studio 2013\Projects\SpaceEngeneers01\assembly\VRage.Native.dll</HintPath>
+      <HintPath>assembly\VRage.Native.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
