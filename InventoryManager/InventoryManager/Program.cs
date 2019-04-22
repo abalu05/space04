@@ -1,38 +1,38 @@
-﻿#region head
-using Sandbox.Game.GameSystems;
-using Sandbox.ModAPI.Ingame;
-using Sandbox.ModAPI.Interfaces;
-using SpaceEngineers.Game.ModAPI.Ingame;
-using VRage.Game.ModAPI.Ingame;
-using VRageMath;
+﻿#region init
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Sandbox.ModAPI.Interfaces;
+using Sandbox.ModAPI.Ingame;
+using SpaceEngineers.Game.ModAPI.Ingame;
+using VRageMath;
+using Sandbox.Game.GameSystems;
 using SpaceEngineers00;
 
-namespace SpaceEngeneers04
+namespace space18
 {
     public class Program
     {
-        #region init
 #line hidden
         public SpaceEngineers00.MyGridTerminalSystem GridTerminalSystem = new SpaceEngineers00.MyGridTerminalSystem();
         public Sandbox.Game.Entities.Blocks.MyProgrammableBlock Me;
-        public void Echo(string value) { System.Diagnostics.Debug.Print(value); }
-        public MyGridProgramRuntimeInfo Runtime = new MyGridProgramRuntimeInfo();
+        public IMyGridProgramRuntimeInfo Runtime;
         public string Storage = "";
-
+        public delegate void jwEcho(string txt);
+        public jwEcho Echo;
         static void Main(string[] args)
         {
+            jwEcho Echo = delegate (string txt) { System.Diagnostics.Debug.Print(txt); };
             Program aa = new Program();
             aa.Main(string.Empty, UpdateType.Terminal);
             aa.Save();
         }
 #line default
-        #endregion init
-        #endregion head
+#endregion init
+
+
 
 
 
@@ -71,15 +71,22 @@ namespace SpaceEngeneers04
                 }
                 findAllParm();
                 findAllItem(ItemsConf);
-                List<clsParam> target = netxParm();
-                List<clsItem> source = findItem(target.First().name);
-                int amount = getAnzahl(target.First().name) / target.Count;
-                foreach (clsParam e2 in target)
+                while (allParam.Count > 0)
                 {
-                    foreach (clsItem e3 in source)
+                    List<clsParam> target = netxParm();
+                    Echo(target.First().name);
+                    foreach (clsParam e2 in target)
                     {
-                        // quelle und ziel, wenn gleich nur menge kontrolieren
-                        e3.myInventory.TransferItemTo(e2.thisBlock.GetInventory(0), 0);
+                        List<clsItem> source = findItem(e2.name);
+                        int amount = getAnzahl(target.First().name) / target.Count;
+
+                        foreach (clsItem e3 in source)
+                        {
+
+                            // quelle und ziel, wenn gleich nur menge kontrolieren
+
+                            e3.myInventory.TransferItemTo(e2.thisBlock.GetInventory(0), e3.pos1, 0, true);
+                        }
                     }
                 }
             }
@@ -192,6 +199,35 @@ namespace SpaceEngeneers04
         }
 
         #region class
+
+        /// <summary>
+        /// Parameter im Custom Data
+        /// </summary>
+        public class clsParam
+        {
+            public IMyTerminalBlock thisBlock;
+            public decimal num = 0;
+            public string name = "";
+            public clsParam() { }
+            public clsParam(string value, IMyTerminalBlock b1) : this(value) { thisBlock = b1; }
+            public clsParam(string value)
+            {
+                value = value.Trim();
+                System.Text.RegularExpressions.Match m = System.Text.RegularExpressions.Regex.Match(value, @"^([+-]?([0-9]+)?(\.[0-9]+)?([eE][0-9]+)?)");
+                if (m.Success) decimal.TryParse(m.Value, out num);
+                name = m.Success ? value.Substring(m.Value.Length).Trim() : value;
+            }
+            public static List<clsParam> parseParams(IMyTerminalBlock b1)
+            {
+                string[] row = b1.CustomData.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
+                List<clsParam> p1 = new List<clsParam>();
+                foreach (string e1 in row) if (e1 != STORAGETAG) p1.Add(new clsParam(e1, b1));
+
+                return p1;
+            }
+            public override string ToString() { return (num >= 0 ? "+" : "") + num.ToString() + " " + name; }
+        }
+
         /// <summary>
         /// Block mit zusatzfuktionen
         /// </summary>
@@ -269,34 +305,6 @@ namespace SpaceEngeneers04
             }
 
             public override string ToString() { return thisBlock.CustomName + "\n" + string.Join("\n", Param); }
-        }
-
-        /// <summary>
-        /// Parameter im Custom Data
-        /// </summary>
-        public class clsParam
-        {
-            public IMyTerminalBlock thisBlock;
-            public decimal num = 0;
-            public string name = "";
-            public clsParam() { }
-            public clsParam(string value, IMyTerminalBlock b1) : this(value) { thisBlock = b1; }
-            public clsParam(string value)
-            {
-                value = value.Trim();
-                System.Text.RegularExpressions.Match m = System.Text.RegularExpressions.Regex.Match(value, @"^([+-]?([0-9]+)?(\.[0-9]+)?([eE][0-9]+)?)");
-                if (m.Success) decimal.TryParse(m.Value, out num);
-                name = m.Success ? value.Substring(m.Value.Length).Trim() : value;
-            }
-            public static List<clsParam> parseParams(IMyTerminalBlock b1)
-            {
-                string[] row = b1.CustomData.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
-                List<clsParam> p1 = new List<clsParam>();
-                foreach (string e1 in row) if (e1 != STORAGETAG) p1.Add(new clsParam(e1, b1));
-
-                return p1;
-            }
-            public override string ToString() { return (num >= 0 ? "+" : "") + num.ToString() + " " + name; }
         }
 
         /// <summary>
