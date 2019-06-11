@@ -8,6 +8,7 @@ using Sandbox.ModAPI.Interfaces;
 using Sandbox.ModAPI.Ingame;
 using SpaceEngineers.Game.ModAPI.Ingame;
 using VRageMath;
+using VRage.Game.ModAPI.Ingame;
 using Sandbox.Game.GameSystems;
 using SpaceEngineers00;
 
@@ -30,10 +31,14 @@ namespace space18
             aa.Save();
         }
 #line default
-#endregion init
+        #endregion init
 
 
 
+        // IMyTextSurfaceProvider b1 = GridTerminalSystem.GetBlockWithName("Programmable block inf2") as IMyTextSurfaceProvider;
+        // IMyTextSurface b3 = b1.GetSurface(0);
+        // b3.ContentType = VRage.Game.GUI.TextPanel.ContentType.TEXT_AND_IMAGE;
+        // b3.WriteText("bla");
 
 
 
@@ -70,29 +75,44 @@ namespace space18
                     if (e1.Contains("scan3")) e1.Scan3(ItemsConf, this);
                 }
                 findAllParm();
-                findAllItem(ItemsConf);
-                while (allParam.Count > 0)
-                {
-                    List<clsParam> target = netxParm();
-                    Echo(target.First().name);
-                    foreach (clsParam e2 in target)
-                    {
-                        List<clsItem> source = findItem(e2.name);
-                        int amount = getAnzahl(target.First().name) / target.Count;
+                Echo($"allParam={allParam.Count.ToString()}");
+                foreach (clsParam e9 in allParam) Echo("#1 " + e9.thisBlock.CustomName);
+                return;
 
+                findAllItem(ItemsConf);
+                Echo($"allItems = {allItems.Count}");
+                do
+                {
+                    List<clsParam> targetParm = netxParm();
+                    if (targetParm == null) break;
+
+                    clsParam firstParm = targetParm.First();
+                    Echo($"target={firstParm.name}");
+
+                    List<clsItem> source = findItem(firstParm.name);
+                    Echo($"source={source.Count.ToString()}");
+
+                    int amount = getAnzahl(firstParm.name) / targetParm.Count;
+                    Echo($"amount={amount.ToString()}");
+
+                    foreach (clsParam e2 in targetParm)
+                    {
                         foreach (clsItem e3 in source)
                         {
-
                             // quelle und ziel, wenn gleich nur menge kontrolieren
+                            Echo($"e2={e2.thisBlock.CustomName}");
+                            Echo($"e3={e3.myTerminalBlock.CustomName}");
+                            if (e2.thisBlock.CustomName == e3.myTerminalBlock.CustomName) continue;
 
-                            e3.myInventory.TransferItemTo(e2.thisBlock.GetInventory(0), e3.pos1, 0, true);
+                            e3.myInventory.TransferItemTo(e2.thisBlock.GetInventory(0), e3.pos1, 0, true, amount);
                         }
                     }
-                }
+                } while (allParam.Count > 0);
             }
-            Echo(Runtime.UpdateFrequency.ToString());
+            // Echo(Runtime.UpdateFrequency.ToString());
         }
 
+        #region
         /// <summary>
         /// Gibt die Anzal des Items vom gesammten System
         /// </summary>
@@ -143,6 +163,7 @@ namespace space18
         /// </summary>
         public void findAllItem(clsItemName ItemsConf)
         {
+            allItems.Clear();
             foreach (clsBlock b1 in allBlocks)
             {
                 for (int i1 = 0; i1 < b1.thisBlock.InventoryCount; i1++)
@@ -170,7 +191,7 @@ namespace space18
         /// <returns></returns>
         public List<clsItem> findItem(string name)
         {
-            return allItems.Where(i => i.rd == name).ToList();
+            return allItems.Where(x => x.rd == name).ToList();
         }
 
         /// <summary>
@@ -191,12 +212,13 @@ namespace space18
         public List<clsParam> netxParm()
         {
             int len = allParam.Count - 1;
-            if (len < 1) return null;
+            if (len < 0) return null;
             List<clsParam> a1 = new List<clsParam>();
             a1.Add(allParam[0]); allParam.RemoveAt(0);
             for (--len; len >= 0; len--) if (a1[0].name == allParam[len].name) { a1.Add(allParam[len]); allParam.RemoveAt(len); }
             return a1;
         }
+        #endregion
 
         #region class
 
@@ -467,6 +489,69 @@ namespace space18
                 // other
                 ADD("HydrogenBottle", "GasContainerObject", "Hydrogen Bottle");
                 ADD("OxygenBottle", "OxygenContainerObject", "Oxygen Bottle");
+            }
+        }
+
+
+
+
+
+
+
+
+
+        public class clsItemName1
+        {
+            /// <summary>mainType</summary>
+            public string rt;
+            /// <summary>subType</summary>
+            public string rs;
+
+            public string _rd;
+            /// <summary>Display Name</summary>
+            public string rd { get { return _rd; } set { _rd = string.IsNullOrEmpty(value) ? ((rt == "Ore" || rt == "Ingot") ? $"{rs} {rt}" : rs) : value; } }
+
+            public clsItemName1() { }
+            public clsItemName1(string rt, string rs, string rd = "")
+            {
+                this.rt = rt; this.rs = rs; this.rd = rd;
+            }
+            public clsItemName1(MyInventoryItem myItem)
+            {
+                rt = myItem.Type.TypeId.ToString(); rs = myItem.Type.SubtypeId.ToString(); rd = null;
+            }
+            public override string ToString() { return rd; }
+        }
+
+        /// <summary>
+        /// Position eines Item im Grid (Block.Inventory.Cell)
+        /// </summary>
+        public class clsPosition
+        {
+            /// <summary>Block ist das Container</summary>
+            public IMyTerminalBlock myTerminalBlock;
+            /// <summary>Inventory vom myTerminalBlock</summary>
+            public IMyInventory myInventory;
+            private int _myInventoryPos;
+            /// <summary>Position im inventory</summary>
+            public int myCell = 0;
+
+            public int myInventoryPos
+            {
+                get { return _myInventoryPos; }
+                set { if (myTerminalBlock.InventoryCount > value) myTerminalBlock.GetInventory(myInventoryPos = value); else _myInventoryPos = 0; }
+            }
+
+            public static bool operator ==(clsPosition a, clsPosition b) { return (a.myTerminalBlock.CustomName == b.myTerminalBlock.CustomName) && (a.myInventoryPos == b.myInventoryPos) && (a.myCell == b.myCell); }
+            public static bool operator !=(clsPosition a, clsPosition b) { return !(a == b); }
+            public override string ToString()
+            {
+                return $"\"{myTerminalBlock.CustomName}\" {_myInventoryPos}.{myCell}";
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is clsPosition p && p.myTerminalBlock.CustomName == p.myTerminalBlock.CustomName && _myInventoryPos == p._myInventoryPos && myCell == p.myCell;
             }
         }
         #endregion class
