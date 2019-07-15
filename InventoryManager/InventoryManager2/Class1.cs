@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace InventoryManager2
 {
@@ -216,8 +213,7 @@ namespace InventoryManager2
         public string ToString(bool pretty = true)
         {
             var result = "";
-            if (Key != "" || StringValue != null)
-                result = Key + (pretty ? ": " : ":");
+            if (Key != "" || StringValue != null) result = Key + (pretty ? ": " : ":");
             if (StringValue != null)
             {
                 result += GetString();
@@ -228,8 +224,7 @@ namespace InventoryManager2
                 foreach (var kvp in GetValue())
                 {
                     var childResult = kvp.Value.ToString(pretty);
-                    if (pretty)
-                        childResult = childResult.Replace("\n", "\n  ");
+                    if (pretty) childResult = childResult.Replace("\n", "\n  ");
                     result += (pretty ? "\n  " : "") + childResult + ",";
                 }
                 result = result.Substring(0, result.Length - 1);
