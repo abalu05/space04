@@ -86,7 +86,7 @@
     <Compile Include="MyGridProgramRuntimeInfo.cs" />
     <Compile Include="MyGridTerminalSystem.cs" />
     <Compile Include="MyTerminalBlock.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Program2.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
